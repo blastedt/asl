@@ -23,6 +23,7 @@ startup {
 	vars.currentSplit = 0;
 
 	vars.start = false;
+	vars.waitingForStart = false;
 
 	settings.Add("split0", true, "Enter the Underworld");
 	settings.Add("split1", true, "Escape done");
@@ -55,18 +56,21 @@ split {
 }
 
 reset {
-    if (current.cell == vars.startZone && vars.in_start_y && vars.in_start_x) {
-        vars.currentSplit = 0;
-        waitingForStart =true;
-        return true;
-    }
-    return false;
+	if (current.cell == vars.startZone && vars.in_start_y && vars.in_start_x) {
+		vars.currentSplit = 0;
+		vars.waitingForStart = true;
+		return true;
+	}
+	return false;
 }
- 
+
 start {
-    if(waitingForStart==true && vars.startZone && !(vars.in_start_y && vars.in_start_x))
+    if (current.cell == vars.startZone && vars.in_start_y && vars.in_start_x) {
+        vars.waitingForStart =true;
+    }
+    if(vars.waitingForStart==true && current.cell == vars.startZone && !(vars.in_start_y && vars.in_start_x))
     {
-        waitingForStart=false;
+        vars.waitingForStart=false;
         return true;
     }
     return false;
