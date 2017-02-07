@@ -1,18 +1,18 @@
 state("defiance") {
-	int x : 				0x14d4d8;
-	int y : 				0x14d4dc;
-	string15 cell : 		0x330bc4;
-	int bossHp :			0x20182c,	0x194;
+	float x : 			0x14d4d8;
+	float y : 			0x14d4dc;
+	string15 cell : 	0x330bc4;
+	int bossHp : 		0x20182c, 	0x194;
 }
 
 startup {
-	vars.startZone = "sholdla";
-	vars.startX = -3621.2f;
-	vars.startY = -1271.6f;
-	vars.leniency = 1.0f;
+	vars.startZone = "shold1a";
+	vars.startX = -3621.2f; //default position for shold1a
+	vars.startY = -1271.6f; //default position for shold1a
+	vars.leniency = 0.5f;
 	vars.splits = new string[] {
-		"eldergodla",
-		"cemetaryla",
+		"eldergod1a",
+		"cemetery1A",
 		"CITADEL10A",
 		"CITADEL14A",
 		"SNOW_PILLARS10A",
@@ -36,16 +36,9 @@ startup {
 }
 
 update {
-	bool moved_x = ((vars.startX + vars.leniency < current.x) || (vars.startX - vars.leniency > current.x)) &&
-					!((vars.startX + vars.leniency < old.x) || (vars.startX - vars.leniency > old.x));
-	bool moved_y = ((vars.startY + vars.leniency < current.y) || (vars.startY - vars.leniency > current.y)) &&
-					!((vars.startY + vars.leniency < old.y) || (vars.startY - vars.leniency > old.y));
-	vars.start = 	( 	(current.cell == vars.startZone) &&
-						(moved_x || moved_y)
-					);
-	//above: start the timer if we're in the start zone, and we newly moved in either the x or y direction
-
-	if (timer.CurrentPhase == TimerPhase.NotRunning || vars.start) {
+	vars.in_start_y = (vars.startY + vars.leniency > current.y) && (vars.startY - vars.leniency < current.y);
+	vars.in_start_x = (vars.startX + vars.leniency > current.x) && (vars.startX - vars.leniency < current.x);
+	if (timer.CurrentPhase == TimerPhase.NotRunning) {
 		vars.currentSplit = 0;
 	}
 }
@@ -53,7 +46,7 @@ update {
 split {
 	if (vars.currentSplit < vars.splits.Length) {
 		if ((current.cell == vars.splits[vars.currentSplit]) &&
-			(current.cell != old.cell)) {
+				(current.cell != old.cell)) {
 			return settings["split"+(vars.currentSplit++)];
 		}
 	} else {
@@ -62,9 +55,19 @@ split {
 }
 
 reset {
-	return vars.start;
+    if (current.cell == vars.startZone && vars.in_start_y && vars.in_start_x) {
+        vars.currentSplit = 0;
+        waitingForStart =true;
+        return true;
+    }
+    return false;
 }
-
+ 
 start {
-	return vars.start;
+    if(waitingForStart==true && vars.startZone && !(vars.in_start_y && vars.in_start_x))
+    {
+        waitingForStart=false;
+        return true;
+    }
+    return false;
 }
