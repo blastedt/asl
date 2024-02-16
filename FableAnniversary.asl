@@ -1,16 +1,11 @@
 state("Fable Anniversary") {
 	int questsCompleted : 0x322FD00, 0x6C, 0x44, 0x14, 0xc4;
-	//is loading zone tranfers (fade)
 	bool isLoading : 0x322139C, 0x1DC, 0x130;
-	//is loading save (fade)
 	bool isLoadingSave: "Fable Anniversary.exe", 0x3230374, 0x08, 0x104;
-	//is in loading screen(no fade) this is to fix an issue with high fps causing the timer to unpasue in loadings after loadwarps
 	bool isInLoadingScreen: "Fable Anniversary.exe", 0x318911C;
-	//prerendered movies
-	bool isPlayerInCutscene: "Fable Anniversary.exe", 0x3232770;
-	//x and z postion
-	float playersXPostion : "Fable Anniversary.exe", 0x322FD00, 0x6c, 0x44, 0x4, 0xc;
-	float playersZPostion : "Fable Anniversary.exe", 0x322FD00, 0x6c, 0x44, 0x4, 0x10;
+	bool isInPrerenderedMovie: "Fable Anniversary.exe", 0x3232770;
+	float playerX : "Fable Anniversary.exe", 0x322FD00, 0x6c, 0x44, 0x4, 0xc;
+	float playerZ : "Fable Anniversary.exe", 0x322FD00, 0x6c, 0x44, 0x4, 0x10;
 }
 
 startup {
@@ -51,16 +46,19 @@ startup {
 	}
 }
 start {
-	//return true if the player is in the start location while a cutscene
-	return current.playersXPostion >= 3494 && current.playersXPostion <= 3495 && current.playersZPostion >= 867 && current.playersZPostion <= 868 && old.isPlayerInCutscene == false && current.isPlayerInCutscene == true;
+	// Player start location is z=867.88, x=3494.918 in Oakvale.
+	return Math.Abs(current.playerX - 3494.918) < 0.5 &&
+		Math.Abs(current.playerZ - 867.88) < 0.5 &&
+		old.isInPrerenderedMovie == false &&
+		current.isInPrerenderedMovie == true;
 }
 
 isLoading {
-	//checking to see if you are loading a zone transfer, loading a save, or are just in a loading screen
 	return current.isLoading || current.isLoadingSave || current.isInLoadingScreen;
 }
 
 split {
-	//dont split if you are loading a save
-	return !current.isLoadingSave && old.questsCompleted < current.questsCompleted && settings["split"+current.questsCompleted];
+	return !current.isLoadingSave &&
+		old.questsCompleted < current.questsCompleted &&
+		settings["split"+current.questsCompleted];
 }
