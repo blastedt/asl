@@ -1,8 +1,9 @@
 state("Fable Anniversary") {
 	int questsCompleted : 0x322FD00, 0x6C, 0x44, 0x14, 0xc4;
+	// 2 isLoading values to fix an issue with high fps causing the timer to unpause in loadings after loadwarps
 	bool isLoading : 0x322139C, 0x1DC, 0x130;
-	bool isLoadingSave: "Fable Anniversary.exe", 0x3230374, 0x08, 0x104;
 	bool isInLoadingScreen: "Fable Anniversary.exe", 0x318911C;
+	bool isLoadingSave: "Fable Anniversary.exe", 0x3230374, 0x08, 0x104;
 	bool isInPrerenderedMovie: "Fable Anniversary.exe", 0x3232770;
 	float playerX : "Fable Anniversary.exe", 0x322FD00, 0x6c, 0x44, 0x4, 0xc;
 	float playerZ : "Fable Anniversary.exe", 0x322FD00, 0x6c, 0x44, 0x4, 0x10;
