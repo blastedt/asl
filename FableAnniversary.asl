@@ -1,7 +1,12 @@
 state("Fable Anniversary") {
 	int questsCompleted : 0x322FD00, 0x6C, 0x44, 0x14, 0xc4;
+	// 2 isLoading values to fix an issue with high fps causing the timer to unpause in loadings after loadwarps
 	bool isLoading : 0x322139C, 0x1DC, 0x130;
+	bool isInLoadingScreen: "Fable Anniversary.exe", 0x318911C;
 	bool isLoadingSave: "Fable Anniversary.exe", 0x3230374, 0x08, 0x104;
+	bool isInPrerenderedMovie: "Fable Anniversary.exe", 0x3232770;
+	float playerX : "Fable Anniversary.exe", 0x322FD00, 0x6c, 0x44, 0x4, 0xc;
+	float playerZ : "Fable Anniversary.exe", 0x322FD00, 0x6c, 0x44, 0x4, 0x10;
 }
 
 startup {
@@ -40,15 +45,21 @@ startup {
 	for (int i = 1; i <= 29; i++) {
 		settings.Add("split"+i, true, vars.quests[i]);
 	}
-	vars.inLoad = false;
+}
+start {
+	// Player start location is z=867.88, x=3494.918 in Oakvale.
+	return Math.Abs(current.playerX - 3494.918) < 0.5 &&
+		Math.Abs(current.playerZ - 867.88) < 0.5 &&
+		old.isInPrerenderedMovie == false &&
+		current.isInPrerenderedMovie == true;
 }
 
 isLoading {
-	return current.isLoading || current.isLoadingSave;
+	return current.isLoading || current.isLoadingSave || current.isInLoadingScreen;
 }
 
 split {
-	if (!current.isLoadingSave){
-		return old.questsCompleted < current.questsCompleted && settings["split"+current.questsCompleted];
-	}
+	return !current.isLoadingSave &&
+		old.questsCompleted < current.questsCompleted &&
+		settings["split"+current.questsCompleted];
 }
